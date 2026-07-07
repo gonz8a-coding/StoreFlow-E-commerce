@@ -69,6 +69,29 @@ npm run dev
 
 The frontend will run on Vite's local development server, while the backend API runs on port `4000` by default.
 
+## Production deployment
+
+### Backend
+Set these production environment variables for your deployed backend service:
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `FRONTEND_URL` (the deployed frontend origin)
+
+The backend uses `FRONTEND_URL` to allow CORS for your production frontend.
+
+### Frontend
+The frontend reads `VITE_API_BASE_URL` during build. For a deployed backend, set:
+
+```bash
+VITE_API_BASE_URL=https://storeflow-e-commerce-2.onrender.com/api
+```
+
+If the frontend and backend are served from the same origin, `VITE_API_BASE_URL` can remain unset.
+
 ## Useful commands
 
 ```bash
