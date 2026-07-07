@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: storeflow-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: storeflow
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d storeflow']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: storeflow-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/storeflow?schema=public
+      JWT_SECRET: storeflow_dev_secret
+      JWT_EXPIRES_IN: 7d
+      STRIPE_SECRET_KEY: sk_test_123
+      STRIPE_WEBHOOK_SECRET: whsec_test_123
+      PORT: 4000
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '4000:4000'
+    command: sh -c "npx prisma db push --skip-generate && npm run start"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: storeflow-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:4000/api
+    depends_on:
+      - backend
+    ports:
+      - '5173:5173'
+    command: sh -c "npm run dev -- --host 0.0.0.0 --port 5173"
+
+volumes:
+  postgres_data:

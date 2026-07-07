@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+}
+
+model Store {
+  id               String    @id @default(uuid())
+  store_name       String
+  store_slug       String    @unique
+  stripe_account_id String?
+  products         Product[]
+  customers        Customer[]
+  orders           Order[]
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  store       Store       @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  store_id    String
+  name        String
+  description String?
+  price       Int         @default(0)
+  stock       Int         @default(0)
+  images      String[]    @default([])
+  orderItems  OrderItem[]
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  @@index([store_id])
+}
+
+model Customer {
+  id                 String   @id @default(uuid())
+  store              Store    @relation(fields: [store_id], references: [id])
+  store_id           String
+  name               String
+  email              String   @unique
+  password_hash      String
+  is_email_verified  Boolean  @default(false)
+  verification_token String?  @unique
+  orders             Order[]
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  @@index([store_id])
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  store        Store       @relation(fields: [store_id], references: [id])
+  store_id     String
+  customer     Customer    @relation(fields: [customer_id], references: [id])
+  customer_id  String
+  total_amount Int
+  status       OrderStatus @default(PENDING)
+  orderItems   OrderItem[]
+  stripe_payment_intent String?  @unique
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  @@index([store_id])
+  @@index([customer_id])
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  order      Order    @relation(fields: [order_id], references: [id])
+  order_id   String
+  product    Product  @relation(fields: [product_id], references: [id])
+  product_id String
+  quantity   Int
+  price      Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  @@index([order_id])
+  @@index([product_id])
+}

@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: #090a0f;
+}
+
+body {
+  @apply bg-surface text-white antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: #38bdf8;
+  color: #111827;
+}
