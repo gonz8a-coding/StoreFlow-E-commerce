@@ -39,6 +39,13 @@ async function generateUniqueStoreSlug(storeName: string) {
 
 export async function registerStore(req: Request, res: Response, next: NextFunction) {
   try {
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({
+        error: 'DATABASE_NOT_CONFIGURED',
+        message: 'The backend is missing DATABASE_URL in its environment variables.',
+      });
+    }
+
     const { ownerName, email, password, storeName } = req.body as {
       ownerName: string;
       email: string;
@@ -141,6 +148,13 @@ export async function registerStore(req: Request, res: Response, next: NextFunct
 
 export async function verifyEmail(req: Request, res: Response, next: NextFunction) {
   try {
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({
+        error: 'DATABASE_NOT_CONFIGURED',
+        message: 'The backend is missing DATABASE_URL in its environment variables.',
+      });
+    }
+
     const token = (req.query.token as string | undefined)?.trim();
     if (!token) {
       return res.status(400).json({ error: 'BAD_REQUEST', message: 'Verification token is required.' });
@@ -173,6 +187,13 @@ export async function verifyEmail(req: Request, res: Response, next: NextFunctio
 
 export async function loginStore(req: Request, res: Response, next: NextFunction) {
   try {
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({
+        error: 'DATABASE_NOT_CONFIGURED',
+        message: 'The backend is missing DATABASE_URL in its environment variables.',
+      });
+    }
+
     const { email, password } = req.body as {
       email: string;
       password: string;

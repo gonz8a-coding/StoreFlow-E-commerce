@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api';
+export const API = import.meta.env.VITE_API_BASE_URL;
+const baseURL = API ?? '/api';
 
 const clearAuthStorage = () => {
   localStorage.removeItem('storeflow_token');

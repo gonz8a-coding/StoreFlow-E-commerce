@@ -13,8 +13,8 @@ import { webhookRouter } from './routes/webhooks';
 import { errorHandler } from './utils/errorHandler';
 
 const app = express();
-const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
-const corsOrigins = frontendUrl
+const rawFrontendUrls = process.env.FRONTEND_URL ?? 'http://localhost:5173';
+const corsOrigins = rawFrontendUrls
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean)
@@ -25,7 +25,13 @@ const corsOrigins = frontendUrl
     }
     return variants;
   });
-const normalizedCorsOrigins = new Set([...corsOrigins, 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000']);
+const allowedCorsOrigins = Array.from(
+  new Set([
+    ...corsOrigins,
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+  ])
+);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -49,37 +55,28 @@ app.use(
   })
 );
 app.use(morgan('combined'));
-app.get(['/', '/health', '/login'], (_req, res) => {
+app.get(['/', '/health', '/login', '/register'], (req, res) => {
+  const isRegister = req.path.toLowerCase() === '/register';
+  const isLogin = req.path.toLowerCase() === '/login';
+
   res.status(200).json({
     ok: true,
     service: 'StoreFlow API',
-    message: 'Backend is running.',
+    message: isRegister
+      ? 'Registration is available through /api/auth/register.'
+      : isLogin
+        ? 'Login is available through /api/auth/login.'
+        : 'Backend is running.',
     endpoints: {
       auth: '/api/auth/login',
+      register: '/api/auth/register',
       public: '/api/public/stores',
       products: '/api/products',
     },
   });
 });
 app.use(cors({
-  origin: (requestOrigin, callback) => {
-    if (!requestOrigin) {
-      callback(null, true);
-      return;
-    }
-
-    if (
-      normalizedCorsOrigins.has(requestOrigin) ||
-      requestOrigin.endsWith('.vercel.app') ||
-      requestOrigin.endsWith('.onrender.com') ||
-      requestOrigin.endsWith('.netlify.app')
-    ) {
-      callback(null, true);
-      return;
-    }
-
-    callback(null, false);
-  },
+  origin: allowedCorsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -92,6 +89,14 @@ app.use('/api/admin', adminRouter);
 app.use('/api/products', productRouter);
 app.use('/api/checkout', checkoutRouter);
 app.use('/api/webhooks/stripe', raw({ type: 'application/json' }), webhookRouter);
+
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'NOT_FOUND',
+    message: 'Route not found.',
+    path: req.path,
+  });
+});
 
 app.use(errorHandler);
 
