@@ -1,5 +1,5 @@
 // Vercel backend entrypoint.
 // This file exists in source control so Vercel can validate the service.
-// The actual Express app is built to dist/server.js by the backend build command.
+// The compiled server module exports the Express app for Vercel runtime.
 
-require('./dist/server.js');
+module.exports = require('./dist/server.js').default;
