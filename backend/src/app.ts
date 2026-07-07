@@ -25,6 +25,7 @@ const corsOrigins = frontendUrl
     }
     return variants;
   });
+const normalizedCorsOrigins = new Set([...corsOrigins, 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000']);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -48,8 +49,32 @@ app.use(
   })
 );
 app.use(morgan('combined'));
+app.get(['/', '/health', '/login'], (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: 'StoreFlow API',
+    message: 'Backend is running.',
+    endpoints: {
+      auth: '/api/auth/login',
+      public: '/api/public/stores',
+      products: '/api/products',
+    },
+  });
+});
 app.use(cors({
-  origin: corsOrigins,
+  origin: (requestOrigin, callback) => {
+    if (!requestOrigin) {
+      callback(null, true);
+      return;
+    }
+
+    if (normalizedCorsOrigins.has(requestOrigin) || requestOrigin.endsWith('.vercel.app')) {
+      callback(null, true);
+      return;
+    }
+
+    callback(null, false);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
