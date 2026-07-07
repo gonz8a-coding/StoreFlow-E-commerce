@@ -4,7 +4,7 @@ import app from './app';
 
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && !process.env.CI) {
   app.listen(port, () => {
     console.info(`StoreFlow backend listening on port ${port}`);
     console.info(`Allowed frontend origin: ${process.env.FRONTEND_URL}`);
