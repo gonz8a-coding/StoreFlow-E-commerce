@@ -68,7 +68,12 @@ app.use(cors({
       return;
     }
 
-    if (normalizedCorsOrigins.has(requestOrigin) || requestOrigin.endsWith('.vercel.app')) {
+    if (
+      normalizedCorsOrigins.has(requestOrigin) ||
+      requestOrigin.endsWith('.vercel.app') ||
+      requestOrigin.endsWith('.onrender.com') ||
+      requestOrigin.endsWith('.netlify.app')
+    ) {
       callback(null, true);
       return;
     }
