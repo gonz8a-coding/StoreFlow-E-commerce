@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
-export const API = import.meta.env.VITE_API_BASE_URL;
-const baseURL = API ?? '/api';
+const baseURL =
+  import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 const clearAuthStorage = () => {
   localStorage.removeItem('storeflow_token');
@@ -19,9 +19,12 @@ export const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('storeflow_token');
-  if (token && config.headers) {
+
+  if (token) {
+    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
@@ -31,6 +34,7 @@ api.interceptors.response.use(
     if (error?.response?.status === 401) {
       clearAuthStorage();
     }
+
     return Promise.reject(error);
   }
 );
