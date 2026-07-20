@@ -76,10 +76,8 @@ app.get(['/', '/health', '/login', '/register'], (req, res) => {
   });
 });
 app.use(cors({
-  origin: allowedCorsOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: true,
+  credentials: true
 }));
 app.use(json());
 
