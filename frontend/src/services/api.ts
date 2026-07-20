@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'https://storeflow-e-commerce-2.onrender.com';
+const baseURL =
+  `${import.meta.env.VITE_API_URL || 'https://storeflow-e-commerce-2.onrender.com'}/api`;
 
 const clearAuthStorage = () => {
   localStorage.removeItem('storeflow_token');
