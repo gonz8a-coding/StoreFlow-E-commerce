@@ -13,6 +13,9 @@ import { webhookRouter } from './routes/webhooks';
 import { errorHandler } from './utils/errorHandler';
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const rawFrontendUrls = process.env.FRONTEND_URL ?? 'http://localhost:5173';
 const corsOrigins = rawFrontendUrls
   .split(',')
